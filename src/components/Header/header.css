@@ -1,0 +1,78 @@
+.header {
+  border-bottom: 1px solid #ddd;
+  padding: 12px 0;
+}
+
+.header-container {
+  width: 100%;
+  padding: 0 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+
+.header-linha-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+
+.badge-status {
+  background-color: #ef5a3c;
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 8px;
+  font-weight: bold;
+}
+
+.horario {
+  color: #11b3a3;
+  font-size: 15px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.info {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #11b3a3;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 9px;
+  font-weight: bold;
+}
+
+.pedido-minimo {
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.pedido-minimo span {
+  color: #11b3a3;
+}
+
+.btn-login {
+  background-color: #24384d;
+  color: #fff;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.btn-login:hover {
+  opacity: 0.9;
+}
+#divCarrinho{
+  display: flex;
+  flex-direction: column;
+  gap: 1pc;
+}

@@ -1,0 +1,54 @@
+import './secCarrinho.css'
+
+function SecaoCarrinho({ aoFechar }) {
+  const itensCarrinho = [
+    { codigo: 1, nome: 'Coxinha de Frango', preco: 8.5, quantidade: 2 },
+    { codigo: 2, nome: 'Kibe com Queijo', preco: 9.0, quantidade: 1 },
+  ]
+
+  const valorTotal = itensCarrinho.reduce(
+    (acumulador, itemCarrinho) =>
+      acumulador + itemCarrinho.preco * itemCarrinho.quantidade,
+    0,
+  )
+
+  return (
+    <aside className="carrinho-lateral">
+      <div className="cabecalho-carrinho">
+        <h2>Meu Pedido</h2>
+        <span className="contador-carrinho">{itensCarrinho.length} itens</span>
+      </div>
+
+      <div className="itens-carrinho">
+        {itensCarrinho.map((itemCarrinho) => (
+          <div key={itemCarrinho.codigo} className="item-carrinho">
+            <div className="info-item">
+              <h3>{itemCarrinho.nome}</h3>
+              <strong>R$ {itemCarrinho.preco.toFixed(2).replace('.', ',')}</strong>
+            </div>
+
+            <div className="controles-item">
+              <button className="botao-quantidade">-</button>
+              <span className="numero-quantidade">{itemCarrinho.quantidade}</span>
+              <button className="botao-quantidade">+</button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="rodape-carrinho">
+        <div className="total-carrinho">
+          <span>Total</span>
+          <strong>R$ {valorTotal.toFixed(2).replace('.', ',')}</strong>
+        </div>
+
+        <button className="botao-finalizar">Finalizar Compra</button>
+        <button className="botao-continuar" onClick={aoFechar}>
+          Continuar Comprando
+        </button>
+      </div>
+    </aside>
+  )
+}
+
+export default SecaoCarrinho
