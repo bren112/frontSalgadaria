@@ -4,17 +4,20 @@
 }
 
 .header-container {
+  max-width: 1200px;
   width: 100%;
+  margin: 0 auto;
   padding: 0 24px;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  gap: 24px;
 }
-
 
 .header-linha-status {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 4px;
 }
@@ -52,6 +55,7 @@
 .pedido-minimo {
   font-size: 28px;
   font-weight: bold;
+  line-height: 1.15;
 }
 
 .pedido-minimo span {
@@ -66,13 +70,53 @@
   border-radius: 4px;
   font-weight: bold;
   cursor: pointer;
+  min-height: 42px;
 }
 
 .btn-login:hover {
   opacity: 0.9;
 }
-#divCarrinho{
+
+#divCarrinho {
   display: flex;
   flex-direction: column;
-  gap: 1pc;
+  align-items: flex-end;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .header-container {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0 16px;
+    gap: 16px;
+  }
+
+  #divCarrinho {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .btn-login,
+  #carrinho-Btn {
+    flex: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .pedido-minimo {
+    font-size: 1.6rem;
+  }
+
+  #divCarrinho {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-login {
+    width: 100%;
+  }
 }

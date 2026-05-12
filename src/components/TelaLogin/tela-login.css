@@ -8,6 +8,7 @@
   justify-content: center;
   padding: 24px;
   z-index: 1100;
+  overflow-y: auto;
 }
 
 .cartao-login {
@@ -124,6 +125,10 @@
 }
 
 @media (max-width: 480px) {
+  .fundo-login {
+    padding: 16px;
+  }
+
   .cartao-login {
     padding: 28px 20px;
     border-radius: 20px;

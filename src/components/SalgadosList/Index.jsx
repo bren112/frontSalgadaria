@@ -6,7 +6,8 @@ function ListaSalgados() {
 
   useEffect(() => {
     async function carregar() {
-      const response = await fetch('http://localhost:8080/salgados')  
+      // const response = await fetch('http://localhost:8080/salgados')  
+      const response = await fetch('https://backsalgadaria.onrender.com/salgados')  
       const data = await response.json()
       setSalgados(data) // salva os dados no estado 
     }
