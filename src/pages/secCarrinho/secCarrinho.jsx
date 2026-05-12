@@ -1,16 +1,74 @@
+import { useState } from 'react'
 import './secCarrinho.css'
 
-function SecaoCarrinho({ aoFechar }) {
-  const itensCarrinho = [
-    { codigo: 1, nome: 'Coxinha de Frango', preco: 8.5, quantidade: 2 },
-    { codigo: 2, nome: 'Kibe com Queijo', preco: 9.0, quantidade: 1 },
-  ]
+const API_PEDIDOS = 'http://localhost:8080/pedidos'
+
+function SecaoCarrinho({
+  itensCarrinho,
+  ultimoItemAdicionadoId,
+  aoAumentarQuantidade,
+  aoDiminuirQuantidade,
+  aoLimparCarrinho,
+  aoFechar,
+}) {
+  const [email, definirEmail] = useState('')
+  const [salvandoPedido, definirSalvandoPedido] = useState(false)
+  const [mensagem, definirMensagem] = useState('')
 
   const valorTotal = itensCarrinho.reduce(
     (acumulador, itemCarrinho) =>
       acumulador + itemCarrinho.preco * itemCarrinho.quantidade,
     0,
   )
+
+  async function finalizarPedido() {
+    if (itensCarrinho.length === 0) {
+      definirMensagem('Adicione pelo menos um item no carrinho.')
+      return
+    }
+
+    const descricaoPedido = itensCarrinho
+      .map(
+        (item) =>
+          `${item.nome} x${item.quantidade} - R$ ${(item.preco * item.quantidade)
+            .toFixed(2)
+            .replace('.', ',')}`
+      )
+      .join(' | ')
+
+    const pedido = {
+      email_id: email || null,
+      descricao_pedido: descricaoPedido,
+      valorTotal,
+      pedidoPago: false,
+    }
+
+    try {
+      definirSalvandoPedido(true)
+      definirMensagem('')
+
+      const response = await fetch(API_PEDIDOS, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(pedido),
+      })
+
+      if (!response.ok) {
+        throw new Error('Nao foi possivel salvar o pedido.')
+      }
+
+      definirMensagem('Pedido salvo com sucesso.')
+      definirEmail('')
+      aoLimparCarrinho()
+    } catch (error) {
+      definirMensagem('Erro ao salvar o pedido.')
+      console.error(error)
+    } finally {
+      definirSalvandoPedido(false)
+    }
+  }
 
   return (
     <div className="fundo-carrinho" role="presentation" onClick={aoFechar}>
@@ -38,29 +96,68 @@ function SecaoCarrinho({ aoFechar }) {
         </div>
 
         <div className="itens-carrinho">
+          {itensCarrinho.length === 0 && (
+            <p className="carrinho-vazio">Seu carrinho esta vazio.</p>
+          )}
+
           {itensCarrinho.map((itemCarrinho) => (
-            <div key={itemCarrinho.codigo} className="item-carrinho">
+            <div
+              key={itemCarrinho.id}
+              className={
+                itemCarrinho.id === ultimoItemAdicionadoId
+                  ? 'item-carrinho item-carrinho-destaque'
+                  : 'item-carrinho'
+              }
+            >
               <div className="info-item">
                 <h3>{itemCarrinho.nome}</h3>
                 <strong>R$ {itemCarrinho.preco.toFixed(2).replace('.', ',')}</strong>
               </div>
 
               <div className="controles-item">
-                <button className="botao-quantidade">-</button>
+                <button
+                  className="botao-quantidade"
+                  onClick={() => aoDiminuirQuantidade(itemCarrinho.id)}
+                >
+                  -
+                </button>
                 <span className="numero-quantidade">{itemCarrinho.quantidade}</span>
-                <button className="botao-quantidade">+</button>
+                <button
+                  className="botao-quantidade"
+                  onClick={() => aoAumentarQuantidade(itemCarrinho.id)}
+                >
+                  +
+                </button>
               </div>
             </div>
           ))}
         </div>
 
         <div className="rodape-carrinho">
+          <label className="campo-email-carrinho">
+            <span>E-mail</span>
+            <input
+              type="email"
+              placeholder="seunome@email.com"
+              value={email}
+              onChange={(evento) => definirEmail(evento.target.value)}
+            />
+          </label>
+
           <div className="total-carrinho">
             <span>Total</span>
             <strong>R$ {valorTotal.toFixed(2).replace('.', ',')}</strong>
           </div>
 
-          <button className="botao-finalizar">Finalizar Compra</button>
+          {mensagem && <p className="mensagem-carrinho">{mensagem}</p>}
+
+          <button
+            className="botao-finalizar"
+            onClick={finalizarPedido}
+            disabled={salvandoPedido}
+          >
+            {salvandoPedido ? 'Salvando...' : 'Finalizar Compra'}
+          </button>
           <button className="botao-continuar" onClick={aoFechar}>
             Continuar Comprando
           </button>
