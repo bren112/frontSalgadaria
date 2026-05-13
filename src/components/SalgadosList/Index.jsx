@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react'
 import './salgados-list.css'
 
-const API_URL = 'http://localhost:8080/salgados'
+const apiUrls = [
+  'http://localhost:8080/salgados',
+  'https://backsalgadaria.onrender.com/salgados',
+]
 
 const categoriasFixas = {
   1: 'Assados',
@@ -21,6 +24,21 @@ function pegarNomeCategoria(produto) {
   return 'Sem categoria'
 }
 
+async function buscarSalgados() {
+  for (const url of apiUrls) {
+    try {
+      const response = await fetch(url)
+
+      if (response.ok) {
+        return await response.json()
+      }
+    } catch {
+    }
+  }
+
+  throw new Error('Nao foi possivel carregar os salgados.')
+}
+
 function ListaSalgados({ aoAdicionar, ultimoItemAdicionadoId }) {
   const [salgados, setSalgados] = useState([])
   const [categoriaAtiva, setCategoriaAtiva] = useState('Todos')
@@ -28,8 +46,7 @@ function ListaSalgados({ aoAdicionar, ultimoItemAdicionadoId }) {
   useEffect(() => {
     async function carregar() {
       try {
-        const response = await fetch(API_URL)
-        const data = await response.json()
+        const data = await buscarSalgados()
         setSalgados(data)
       } catch (error) {
         console.error('Erro ao carregar salgados:', error)

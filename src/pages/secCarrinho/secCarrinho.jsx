@@ -1,7 +1,31 @@
 import { useState } from 'react'
 import './secCarrinho.css'
 
-const API_PEDIDOS = 'http://localhost:8080/pedidos'
+const apiPedidosUrls = [
+  'http://localhost:8080/pedidos',
+  'https://backsalgadaria.onrender.com/pedidos',
+]
+
+async function salvarPedidoNaApi(pedido) {
+  for (const url of apiPedidosUrls) {
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(pedido),
+      })
+
+      if (response.ok) {
+        return await response.json()
+      }
+    } catch {
+    }
+  }
+
+  throw new Error('Nao foi possivel salvar o pedido.')
+}
 
 function SecaoCarrinho({
   itensCarrinho,
@@ -47,17 +71,7 @@ function SecaoCarrinho({
       definirSalvandoPedido(true)
       definirMensagem('')
 
-      const response = await fetch(API_PEDIDOS, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(pedido),
-      })
-
-      if (!response.ok) {
-        throw new Error('Nao foi possivel salvar o pedido.')
-      }
+      await salvarPedidoNaApi(pedido)
 
       definirMensagem('Pedido salvo com sucesso.')
       definirEmail('')
