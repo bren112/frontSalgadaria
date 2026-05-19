@@ -1,0 +1,137 @@
+.secao-pedidos-pendentes {
+  width: 100%;
+  margin: 24px 0 0;
+  padding: 18px;
+  border-radius: 20px;
+  background: rgba(255, 246, 240, 0.92);
+  border: 1px solid #f1d7c8;
+  box-shadow: none;
+}
+
+.cabecalho-pedidos-pendentes h2 {
+  margin: 10px 0 8px;
+  color: #24384d;
+}
+
+.cabecalho-pedidos-pendentes p {
+  margin: 0;
+  color: #5f6f7f;
+}
+
+.tag-pedidos-pendentes {
+  display: inline-flex;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #fff1e6;
+  color: #b94f20;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.mensagem-pedidos-pendentes,
+.estado-pedidos-pendentes {
+  margin: 18px 0 0;
+  color: #24384d;
+}
+
+.lista-pedidos-pendentes {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.cartao-pedido-pendente {
+  padding: 16px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #ffffff 0%, #fffaf6 100%);
+  border: 1px solid #f4e1d4;
+}
+
+.topo-cartao-pedido {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.numero-pedido {
+  display: inline-block;
+  margin-bottom: 6px;
+  color: #5f6f7f;
+  font-size: 0.85rem;
+}
+
+.topo-cartao-pedido h3 {
+  margin: 0;
+  color: #24384d;
+  font-size: 1rem;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.topo-cartao-pedido strong {
+  color: #ef5a3c;
+  white-space: nowrap;
+}
+
+.descricao-pedido-pendente {
+  margin: 16px 0;
+  color: #4f6170;
+  line-height: 1.55;
+}
+
+.rodape-cartao-pedido {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.status-pedido-pendente {
+  display: inline-flex;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #e9fbf8;
+  color: #0d7f74;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.status-pedido-concluido {
+  display: inline-flex;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #eef3ff;
+  color: #3451a3;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.botao-cancelar-pedido {
+  border: none;
+  border-radius: 12px;
+  background: #24384d;
+  color: #ffffff;
+  padding: 10px 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.botao-cancelar-pedido:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  .secao-pedidos-pendentes {
+    width: 100%;
+    padding: 16px 14px;
+    border-radius: 18px;
+  }
+
+  .rodape-cartao-pedido {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

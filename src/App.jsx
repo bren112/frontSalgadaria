@@ -1,15 +1,48 @@
-import { useState as usarEstado } from 'react'
+import { useEffect as usarEfeito, useState as usarEstado } from 'react'
 import Cabecalho from './components/Header/Index'
 import ListaSalgados from './components/SalgadosList/Index'
 import './App.css'
 import SecaoCarrinho from './pages/secCarrinho/secCarrinho'
 import TelaLogin from './components/TelaLogin/Index'
 
+const chaveUsuarioLocalStorage = 'malagutti_usuario_logado'
+
+function lerUsuarioSalvo() {
+  try {
+    const usuarioSalvo = window.localStorage.getItem(chaveUsuarioLocalStorage)
+
+    if (!usuarioSalvo) {
+      return null
+    }
+
+    return JSON.parse(usuarioSalvo)
+  } catch {
+    return null
+  }
+}
+
 function Aplicacao() {
   const [mostrarCarrinho, definirMostrarCarrinho] = usarEstado(false)
   const [mostrarLogin, definirMostrarLogin] = usarEstado(false)
   const [itensCarrinho, definirItensCarrinho] = usarEstado([])
   const [ultimoItemAdicionadoId, definirUltimoItemAdicionadoId] = usarEstado(null)
+  const [usuarioLogado, definirUsuarioLogado] = usarEstado(() => lerUsuarioSalvo())
+  const [atualizadorPedidos, definirAtualizadorPedidos] = usarEstado(0)
+
+  usarEfeito(() => {
+    try {
+      if (usuarioLogado) {
+        window.localStorage.setItem(
+          chaveUsuarioLocalStorage,
+          JSON.stringify(usuarioLogado)
+        )
+        return
+      }
+
+      window.localStorage.removeItem(chaveUsuarioLocalStorage)
+    } catch {
+    }
+  }, [usuarioLogado])
 
   function adicionarAoCarrinho(produto) {
     definirMostrarCarrinho(true)
@@ -68,11 +101,34 @@ function Aplicacao() {
     definirItensCarrinho([])
   }
 
+  function abrirCarrinho() {
+    definirMostrarCarrinho(true)
+  }
+
+  function abrirLogin() {
+    definirMostrarLogin(true)
+  }
+
+  function lidarComLogin(usuario) {
+    definirUsuarioLogado(usuario)
+    definirMostrarLogin(false)
+  }
+
+  function sairDaConta() {
+    definirUsuarioLogado(null)
+  }
+
+  function atualizarListaPedidos() {
+    definirAtualizadorPedidos((valorAtual) => valorAtual + 1)
+  }
+
   return (
     <main className="app">
       <Cabecalho
-        aoAbrirCarrinho={() => definirMostrarCarrinho(true)}
-        aoAbrirLogin={() => definirMostrarLogin(true)}
+        usuarioLogado={usuarioLogado}
+        aoAbrirCarrinho={abrirCarrinho}
+        aoAbrirLogin={abrirLogin}
+        aoSair={sairDaConta}
       />
       <ListaSalgados
         aoAdicionar={adicionarAoCarrinho}
@@ -85,11 +141,18 @@ function Aplicacao() {
           aoAumentarQuantidade={aumentarQuantidade}
           aoDiminuirQuantidade={diminuirQuantidade}
           aoLimparCarrinho={limparCarrinho}
+          usuarioLogado={usuarioLogado}
+          aoAbrirLogin={abrirLogin}
+          aoPedidoCriado={atualizarListaPedidos}
+          atualizadorPedidos={atualizadorPedidos}
           aoFechar={() => definirMostrarCarrinho(false)}
         />
       )}
       {mostrarLogin && (
-        <TelaLogin aoFechar={() => definirMostrarLogin(false)} />
+        <TelaLogin
+          aoFechar={() => definirMostrarLogin(false)}
+          aoLoginRealizado={lidarComLogin}
+        />
       )}
     </main>
   )

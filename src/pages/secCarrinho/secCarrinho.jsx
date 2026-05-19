@@ -1,10 +1,57 @@
 import { useState } from 'react'
+import PedidosPendentes from '../../components/PedidosPendentes/Index'
 import './secCarrinho.css'
 
 const apiPedidosUrls = [
   'http://localhost:8080/pedidos',
   'https://backsalgadaria.onrender.com/pedidos',
 ]
+
+function formatarMoeda(valor) {
+  return `R$ ${Number(valor || 0).toFixed(2).replace('.', ',')}`
+}
+
+function calcularTotalItens(itensCarrinho) {
+  return itensCarrinho.reduce((total, item) => {
+    return total + Number(item.preco || 0) * Number(item.quantidade || 0)
+  }, 0)
+}
+
+function montarItensPedido(itensCarrinho) {
+  return itensCarrinho.map((item) => ({
+    id: item.id,
+    nome: item.nome,
+    precoUnitario: Number(item.preco) || 0,
+    quantidade: Number(item.quantidade) || 0,
+  }))
+}
+
+function montarPayloadPedido({ usuarioLogado, itensCarrinho }) {
+  return {
+    usuarioId: usuarioLogado.id,
+    itens: montarItensPedido(itensCarrinho),
+  }
+}
+
+function validarPedido({ usuarioLogado, itensCarrinho }) {
+  if (!usuarioLogado?.id) {
+    return 'Faça login para finalizar o pedido.'
+  }
+
+  if (itensCarrinho.length === 0) {
+    return 'Adicione pelo menos um item no carrinho.'
+  }
+
+  const possuiItemInvalido = itensCarrinho.some((item) => {
+    return !item.nome || Number(item.preco) <= 0 || Number(item.quantidade) <= 0
+  })
+
+  if (possuiItemInvalido) {
+    return 'Existem itens invalidos no pedido.'
+  }
+
+  return ''
+}
 
 async function salvarPedidoNaApi(pedido) {
   for (const url of apiPedidosUrls) {
@@ -33,49 +80,46 @@ function SecaoCarrinho({
   aoAumentarQuantidade,
   aoDiminuirQuantidade,
   aoLimparCarrinho,
+  usuarioLogado,
+  aoAbrirLogin,
+  aoPedidoCriado,
+  atualizadorPedidos,
   aoFechar,
 }) {
-  const [email, definirEmail] = useState('')
   const [salvandoPedido, definirSalvandoPedido] = useState(false)
   const [mensagem, definirMensagem] = useState('')
-
-  const valorTotal = itensCarrinho.reduce(
-    (acumulador, itemCarrinho) =>
-      acumulador + itemCarrinho.preco * itemCarrinho.quantidade,
-    0,
-  )
+  const [abaPedidosAtiva, definirAbaPedidosAtiva] = useState('pendentes')
+  const valorTotal = calcularTotalItens(itensCarrinho)
 
   async function finalizarPedido() {
-    if (itensCarrinho.length === 0) {
-      definirMensagem('Adicione pelo menos um item no carrinho.')
+    const erroValidacao = validarPedido({
+      usuarioLogado,
+      itensCarrinho,
+    })
+
+    if (erroValidacao) {
+      definirMensagem(erroValidacao)
       return
     }
 
-    const descricaoPedido = itensCarrinho
-      .map(
-        (item) =>
-          `${item.nome} x${item.quantidade} - R$ ${(item.preco * item.quantidade)
-            .toFixed(2)
-            .replace('.', ',')}`
-      )
-      .join(' | ')
-
-    const pedido = {
-      email_id: email || null,
-      descricao_pedido: descricaoPedido,
-      valorTotal,
-      pedidoPago: false,
-    }
+    const pedido = montarPayloadPedido({
+      usuarioLogado,
+      itensCarrinho,
+    })
 
     try {
       definirSalvandoPedido(true)
       definirMensagem('')
 
-      await salvarPedidoNaApi(pedido)
+      const respostaPedido = await salvarPedidoNaApi(pedido)
 
-      definirMensagem('Pedido salvo com sucesso.')
-      definirEmail('')
+      definirMensagem(
+        `Pedido salvo com sucesso. Total: ${formatarMoeda(
+          respostaPedido.valorTotal || valorTotal
+        )}.`
+      )
       aoLimparCarrinho()
+      aoPedidoCriado?.()
     } catch (error) {
       definirMensagem('Erro ao salvar o pedido.')
       console.error(error)
@@ -110,6 +154,33 @@ function SecaoCarrinho({
         </div>
 
         <div className="itens-carrinho">
+          <section className="secao-abas-pedidos">
+            <div className="abas-pedidos">
+              <button
+                type="button"
+                className={
+                  abaPedidosAtiva === 'pendentes'
+                    ? 'aba-pedidos aba-pedidos-ativa'
+                    : 'aba-pedidos'
+                }
+                onClick={() => definirAbaPedidosAtiva('pendentes')}
+              >
+                Pendentes
+              </button>
+              <button
+                type="button"
+                className={
+                  abaPedidosAtiva === 'concluidos'
+                    ? 'aba-pedidos aba-pedidos-ativa'
+                    : 'aba-pedidos'
+                }
+                onClick={() => definirAbaPedidosAtiva('concluidos')}
+              >
+                Concluidos
+              </button>
+            </div>
+          </section>
+
           {itensCarrinho.length === 0 && (
             <p className="carrinho-vazio">Seu carrinho esta vazio.</p>
           )}
@@ -125,7 +196,7 @@ function SecaoCarrinho({
             >
               <div className="info-item">
                 <h3>{itemCarrinho.nome}</h3>
-                <strong>R$ {itemCarrinho.preco.toFixed(2).replace('.', ',')}</strong>
+                <strong>{formatarMoeda(itemCarrinho.preco)}</strong>
               </div>
 
               <div className="controles-item">
@@ -145,22 +216,37 @@ function SecaoCarrinho({
               </div>
             </div>
           ))}
+
+          {abaPedidosAtiva === 'pendentes' && (
+            <PedidosPendentes
+              usuarioLogado={usuarioLogado}
+              atualizadorLista={atualizadorPedidos}
+            />
+          )}
+
+          {abaPedidosAtiva === 'concluidos' && (
+            <PedidosPendentes
+              usuarioLogado={usuarioLogado}
+              atualizadorLista={atualizadorPedidos}
+              tipo="concluidos"
+            />
+          )}
         </div>
 
         <div className="rodape-carrinho">
-          <label className="campo-email-carrinho">
-            <span>E-mail</span>
-            <input
-              type="email"
-              placeholder="seunome@email.com"
-              value={email}
-              onChange={(evento) => definirEmail(evento.target.value)}
-            />
-          </label>
+          <div className="resumo-usuario-carrinho">
+            {usuarioLogado ? (
+              <p>
+                Pedido para <strong>{usuarioLogado.nome || usuarioLogado.email}</strong>
+              </p>
+            ) : (
+              <p>Entre na sua conta para concluir o pedido.</p>
+            )}
+          </div>
 
           <div className="total-carrinho">
             <span>Total</span>
-            <strong>R$ {valorTotal.toFixed(2).replace('.', ',')}</strong>
+            <strong>{formatarMoeda(valorTotal)}</strong>
           </div>
 
           {mensagem && <p className="mensagem-carrinho">{mensagem}</p>}
@@ -168,10 +254,15 @@ function SecaoCarrinho({
           <button
             className="botao-finalizar"
             onClick={finalizarPedido}
-            disabled={salvandoPedido}
+            disabled={salvandoPedido || !usuarioLogado?.id || itensCarrinho.length === 0}
           >
             {salvandoPedido ? 'Salvando...' : 'Finalizar Compra'}
           </button>
+          {!usuarioLogado && (
+            <button className="botao-login-carrinho" onClick={aoAbrirLogin}>
+              Fazer Login
+            </button>
+          )}
           <button className="botao-continuar" onClick={aoFechar}>
             Continuar Comprando
           </button>

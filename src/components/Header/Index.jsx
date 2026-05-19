@@ -1,11 +1,13 @@
 import BotaoCarrinho from '../carrinho/btnCarrinho'
 import './header.css'
 
-function Cabecalho({ aoAbrirCarrinho, aoAbrirLogin }) {
+function Cabecalho({ usuarioLogado, aoAbrirCarrinho, aoAbrirLogin, aoSair }) {
   const situacao = 'Fechado'
   const horario = '18:00 - 23:59'
   const pedidoMinimo = 'R$ 20,00'
-  const textoBotao = 'Login'
+  const textoBotao = usuarioLogado
+    ? `Sair (${usuarioLogado.nome || usuarioLogado.email})`
+    : 'Login'
 
   return (
     <header className="header">
@@ -26,7 +28,11 @@ function Cabecalho({ aoAbrirCarrinho, aoAbrirLogin }) {
         </div>
 
     <div id='divCarrinho'>
-        <button className="btn-login" onClick={aoAbrirLogin} type="button">
+        <button
+          className="btn-login"
+          onClick={usuarioLogado ? aoSair : aoAbrirLogin}
+          type="button"
+        >
           {textoBotao}
         </button>
 

@@ -64,6 +64,32 @@
   line-height: 1.5;
 }
 
+.alternador-login {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 18px;
+  background: #f5eee8;
+  padding: 6px;
+  border-radius: 16px;
+}
+
+.botao-alternador-login {
+  height: 42px;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  color: #5f6f7f;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.botao-alternador-ativo {
+  background: #ffffff;
+  color: #24384d;
+  box-shadow: 0 6px 16px rgba(36, 56, 77, 0.08);
+}
+
 .formulario-login {
   display: flex;
   flex-direction: column;
@@ -110,6 +136,11 @@
   color: #ffffff;
 }
 
+.botao-primario-login:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 .botao-secundario-login {
   background: #ffffff;
   color: #24384d;
@@ -122,6 +153,19 @@
   font-weight: 700;
   text-decoration: none;
   margin-top: 4px;
+}
+
+.link-login-botao {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.mensagem-erro-login {
+  margin: 0;
+  color: #c74d2f;
+  font-size: 0.95rem;
 }
 
 @media (max-width: 480px) {
