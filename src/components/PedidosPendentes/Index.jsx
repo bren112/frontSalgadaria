@@ -16,6 +16,11 @@ const urlsApiCancelarPedido = [
   'https://backsalgadaria.onrender.com/pedidos',
 ]
 
+const urlsApiMarcarEntregue = [
+  'http://localhost:8080/pedidos',
+  'https://backsalgadaria.onrender.com/pedidos',
+]
+
 function formatarMoeda(valor) {
   return `R$ ${Number(valor || 0).toFixed(2).replace('.', ',')}`
 }
@@ -75,11 +80,41 @@ async function cancelarPedido({ pedidoId, usuarioId }) {
   throw new Error('Nao foi possivel cancelar o pedido.')
 }
 
-function PedidosPendentes({ usuarioLogado, atualizadorLista, tipo = 'pendentes' }) {
+async function concluirPedido({ pedidoId, usuarioId }) {
+  for (const urlBase of urlsApiMarcarEntregue) {
+    try {
+      const url = new URL(`${urlBase}/${pedidoId}/pagar`)
+      url.searchParams.set('usuarioId', String(usuarioId))
+
+      const resposta = await fetch(url, {
+        method: 'PATCH',
+      })
+
+      if (resposta.ok) {
+        return await resposta.json()
+      }
+    } catch {
+    }
+  }
+
+  throw new Error('Nao foi possivel concluir o pedido.')
+}
+
+function PedidosPendentes({
+  usuarioLogado,
+  atualizadorLista,
+  tipo = 'pendentes',
+  titulo,
+  descricao,
+  mostrarEmailPedido = false,
+  permitirMarcarPago = false,
+  aoAtualizarPedidos,
+}) {
   const [pedidosPendentes, definirPedidosPendentes] = useState([])
   const [carregandoPedidos, definirCarregandoPedidos] = useState(true)
   const [mensagemPedidos, definirMensagemPedidos] = useState('')
   const [pedidoCancelandoId, definirPedidoCancelandoId] = useState(null)
+  const [pedidoConcluindoId, definirPedidoConcluindoId] = useState(null)
   const mostrandoPendentes = tipo === 'pendentes'
 
   useEffect(() => {
@@ -115,7 +150,7 @@ function PedidosPendentes({ usuarioLogado, atualizadorLista, tipo = 'pendentes' 
   }, [usuarioLogado, atualizadorLista, mostrandoPendentes])
 
   async function cancelarPedidoDoUsuario(pedidoId) {
-    if (!usuarioLogado?.id) {
+    if (!usuarioLogado?.id || !mostrandoPendentes) {
       return
     }
 
@@ -132,11 +167,39 @@ function PedidosPendentes({ usuarioLogado, atualizadorLista, tipo = 'pendentes' 
         pedidosAtuais.filter((pedido) => pedido.id !== pedidoId)
       )
       definirMensagemPedidos('Pedido cancelado com sucesso.')
+      aoAtualizarPedidos?.()
     } catch (error) {
       definirMensagemPedidos('Nao foi possivel cancelar o pedido.')
       console.error(error)
     } finally {
       definirPedidoCancelandoId(null)
+    }
+  }
+
+  async function concluirPedidoDoAdmin(pedidoId) {
+    if (!usuarioLogado?.id || !mostrandoPendentes || !permitirMarcarPago) {
+      return
+    }
+
+    try {
+      definirPedidoConcluindoId(pedidoId)
+      definirMensagemPedidos('')
+
+      await concluirPedido({
+        pedidoId,
+        usuarioId: usuarioLogado.id,
+      })
+
+      definirPedidosPendentes((pedidosAtuais) =>
+        pedidosAtuais.filter((pedido) => pedido.id !== pedidoId)
+      )
+      definirMensagemPedidos('Pedido marcado como entregue.')
+      aoAtualizarPedidos?.()
+    } catch (error) {
+      definirMensagemPedidos('Nao foi possivel marcar o pedido como entregue.')
+      console.error(error)
+    } finally {
+      definirPedidoConcluindoId(null)
     }
   }
 
@@ -146,14 +209,16 @@ function PedidosPendentes({ usuarioLogado, atualizadorLista, tipo = 'pendentes' 
         <div>
           <span className="tag-pedidos-pendentes">Pedidos</span>
           <h2>
-            {mostrandoPendentes
-              ? 'Seus pedidos pendentes'
-              : 'Seus pedidos concluidos'}
+            {titulo ||
+              (mostrandoPendentes
+                ? 'Seus pedidos pendentes'
+                : 'Seus pedidos entregues')}
           </h2>
           <p>
-            {mostrandoPendentes
-              ? 'Veja apenas os pedidos que voce criou e cancele quando precisar.'
-              : 'Consulte os pedidos que ja foram concluídos para a sua conta.'}
+            {descricao ||
+              (mostrandoPendentes
+                ? 'Veja apenas os pedidos que voce criou e cancele quando precisar.'
+                : 'Consulte os pedidos que ja foram entregues para a sua conta.')}
           </p>
         </div>
       </div>
@@ -168,7 +233,7 @@ function PedidosPendentes({ usuarioLogado, atualizadorLista, tipo = 'pendentes' 
         <p className="estado-pedidos-pendentes">
           {mostrandoPendentes
             ? 'Carregando pedidos pendentes...'
-            : 'Carregando pedidos concluidos...'}
+            : 'Carregando pedidos entregues...'}
         </p>
       )}
 
@@ -176,7 +241,7 @@ function PedidosPendentes({ usuarioLogado, atualizadorLista, tipo = 'pendentes' 
         <p className="estado-pedidos-pendentes">
           {mostrandoPendentes
             ? 'Nenhum pedido pendente no momento.'
-            : 'Nenhum pedido concluido no momento.'}
+            : 'Nenhum pedido entregue no momento.'}
         </p>
       )}
 
@@ -187,7 +252,11 @@ function PedidosPendentes({ usuarioLogado, atualizadorLista, tipo = 'pendentes' 
               <div className="topo-cartao-pedido">
                 <div>
                   <span className="numero-pedido">Pedido #{pedido.id}</span>
-                  <h3>{usuarioLogado.nome || usuarioLogado.email}</h3>
+                  <h3>
+                    {mostrarEmailPedido
+                      ? pedido.email_id
+                      : usuarioLogado.nome || usuarioLogado.email}
+                  </h3>
                 </div>
                 <strong>{formatarMoeda(pedido.valorTotal)}</strong>
               </div>
@@ -202,18 +271,34 @@ function PedidosPendentes({ usuarioLogado, atualizadorLista, tipo = 'pendentes' 
                       : 'status-pedido-concluido'
                   }
                 >
-                  {mostrandoPendentes ? 'Pendente' : 'Concluido'}
+                  {mostrandoPendentes ? 'Pendente' : 'Entregue'}
                 </span>
-                {mostrandoPendentes && (
-                  <button
-                    type="button"
-                    className="botao-cancelar-pedido"
-                    onClick={() => cancelarPedidoDoUsuario(pedido.id)}
-                    disabled={pedidoCancelandoId === pedido.id}
-                  >
-                    {pedidoCancelandoId === pedido.id ? 'Cancelando...' : 'Cancelar pedido'}
-                  </button>
-                )}
+
+                <div className="acoes-pedido">
+                  {permitirMarcarPago && mostrandoPendentes && (
+                    <button
+                      type="button"
+                      className="botao-acao-pedido botao-marcar-pago"
+                      onClick={() => concluirPedidoDoAdmin(pedido.id)}
+                      disabled={pedidoConcluindoId === pedido.id}
+                    >
+                      {pedidoConcluindoId === pedido.id
+                        ? 'Salvando...'
+                        : 'Marcar como entregue'}
+                    </button>
+                  )}
+
+                  {!permitirMarcarPago && mostrandoPendentes && (
+                    <button
+                      type="button"
+                      className="botao-acao-pedido botao-cancelar-pedido"
+                      onClick={() => cancelarPedidoDoUsuario(pedido.id)}
+                      disabled={pedidoCancelandoId === pedido.id}
+                    >
+                      {pedidoCancelandoId === pedido.id ? 'Cancelando...' : 'Cancelar pedido'}
+                    </button>
+                  )}
+                </div>
               </div>
             </article>
           ))}

@@ -4,8 +4,10 @@ import ListaSalgados from './components/SalgadosList/Index'
 import './App.css'
 import SecaoCarrinho from './pages/secCarrinho/secCarrinho'
 import TelaLogin from './components/TelaLogin/Index'
+import PaginaAdmin from './pages/admin/Index'
 
 const chaveUsuarioLocalStorage = 'malagutti_usuario_logado'
+const rotaAdmin = '/admin'
 
 function lerUsuarioSalvo() {
   try {
@@ -21,6 +23,19 @@ function lerUsuarioSalvo() {
   }
 }
 
+function lerRotaAtual() {
+  return window.location.pathname || '/'
+}
+
+function navegarPara(rota) {
+  if (window.location.pathname === rota) {
+    return
+  }
+
+  window.history.pushState({}, '', rota)
+  window.dispatchEvent(new PopStateEvent('popstate'))
+}
+
 function Aplicacao() {
   const [mostrarCarrinho, definirMostrarCarrinho] = usarEstado(false)
   const [mostrarLogin, definirMostrarLogin] = usarEstado(false)
@@ -28,6 +43,21 @@ function Aplicacao() {
   const [ultimoItemAdicionadoId, definirUltimoItemAdicionadoId] = usarEstado(null)
   const [usuarioLogado, definirUsuarioLogado] = usarEstado(() => lerUsuarioSalvo())
   const [atualizadorPedidos, definirAtualizadorPedidos] = usarEstado(0)
+  const [rotaAtual, definirRotaAtual] = usarEstado(() => lerRotaAtual())
+  const usuarioEhAdmin = Boolean(usuarioLogado?.admin)
+  const estaNaRotaAdmin = rotaAtual === rotaAdmin
+
+  usarEfeito(() => {
+    function sincronizarRota() {
+      definirRotaAtual(lerRotaAtual())
+    }
+
+    window.addEventListener('popstate', sincronizarRota)
+
+    return () => {
+      window.removeEventListener('popstate', sincronizarRota)
+    }
+  }, [])
 
   usarEfeito(() => {
     try {
@@ -43,6 +73,17 @@ function Aplicacao() {
     } catch {
     }
   }, [usuarioLogado])
+
+  usarEfeito(() => {
+    if (usuarioEhAdmin && !estaNaRotaAdmin) {
+      navegarPara(rotaAdmin)
+      return
+    }
+
+    if (!usuarioEhAdmin && estaNaRotaAdmin) {
+      navegarPara('/')
+    }
+  }, [estaNaRotaAdmin, usuarioEhAdmin])
 
   function adicionarAoCarrinho(produto) {
     definirMostrarCarrinho(true)
@@ -112,10 +153,16 @@ function Aplicacao() {
   function lidarComLogin(usuario) {
     definirUsuarioLogado(usuario)
     definirMostrarLogin(false)
+
+    if (usuario?.admin) {
+      navegarPara(rotaAdmin)
+    }
   }
 
   function sairDaConta() {
     definirUsuarioLogado(null)
+    definirMostrarCarrinho(false)
+    navegarPara('/')
   }
 
   function atualizarListaPedidos() {
@@ -129,25 +176,37 @@ function Aplicacao() {
         aoAbrirCarrinho={abrirCarrinho}
         aoAbrirLogin={abrirLogin}
         aoSair={sairDaConta}
+        esconderCarrinho={usuarioEhAdmin}
       />
-      <ListaSalgados
-        aoAdicionar={adicionarAoCarrinho}
-        ultimoItemAdicionadoId={ultimoItemAdicionadoId}
-      />
-      {mostrarCarrinho && (
-        <SecaoCarrinho
-          itensCarrinho={itensCarrinho}
-          ultimoItemAdicionadoId={ultimoItemAdicionadoId}
-          aoAumentarQuantidade={aumentarQuantidade}
-          aoDiminuirQuantidade={diminuirQuantidade}
-          aoLimparCarrinho={limparCarrinho}
+
+      {usuarioEhAdmin ? (
+        <PaginaAdmin
           usuarioLogado={usuarioLogado}
-          aoAbrirLogin={abrirLogin}
-          aoPedidoCriado={atualizarListaPedidos}
           atualizadorPedidos={atualizadorPedidos}
-          aoFechar={() => definirMostrarCarrinho(false)}
         />
+      ) : (
+        <>
+          <ListaSalgados
+            aoAdicionar={adicionarAoCarrinho}
+            ultimoItemAdicionadoId={ultimoItemAdicionadoId}
+          />
+          {mostrarCarrinho && (
+            <SecaoCarrinho
+              itensCarrinho={itensCarrinho}
+              ultimoItemAdicionadoId={ultimoItemAdicionadoId}
+              aoAumentarQuantidade={aumentarQuantidade}
+              aoDiminuirQuantidade={diminuirQuantidade}
+              aoLimparCarrinho={limparCarrinho}
+              usuarioLogado={usuarioLogado}
+              aoAbrirLogin={abrirLogin}
+              aoPedidoCriado={atualizarListaPedidos}
+              atualizadorPedidos={atualizadorPedidos}
+              aoFechar={() => definirMostrarCarrinho(false)}
+            />
+          )}
+        </>
       )}
+
       {mostrarLogin && (
         <TelaLogin
           aoFechar={() => definirMostrarLogin(false)}

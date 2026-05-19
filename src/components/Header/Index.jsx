@@ -1,7 +1,13 @@
 import BotaoCarrinho from '../carrinho/btnCarrinho'
 import './header.css'
 
-function Cabecalho({ usuarioLogado, aoAbrirCarrinho, aoAbrirLogin, aoSair }) {
+function Cabecalho({
+  usuarioLogado,
+  aoAbrirCarrinho,
+  aoAbrirLogin,
+  aoSair,
+  esconderCarrinho = false,
+}) {
   const situacao = 'Fechado'
   const horario = '18:00 - 23:59'
   const pedidoMinimo = 'R$ 20,00'
@@ -15,15 +21,15 @@ function Cabecalho({ usuarioLogado, aoAbrirCarrinho, aoAbrirLogin, aoSair }) {
 
         <div>
           <div className="header-linha-status">
-            <span className="badge-status">{situacao}</span>
+            {/* <span className="badge-status">{situacao}</span> */}
 
-            <span className="horario">{horario}</span>
+            {/* <span className="horario">{horario}</span> */}
 
-            <span className="info">i</span>
+            {/* <span className="info">i</span> */}
           </div>
 
           <div className="pedido-minimo">
-            Pedido mínimo: <span>{pedidoMinimo}</span>
+            {/* Pedido mínimo: <span>{pedidoMinimo}</span> */}
           </div>
         </div>
 
@@ -36,7 +42,7 @@ function Cabecalho({ usuarioLogado, aoAbrirCarrinho, aoAbrirLogin, aoSair }) {
           {textoBotao}
         </button>
 
-    <BotaoCarrinho aoClicar={aoAbrirCarrinho} />
+    {!esconderCarrinho && <BotaoCarrinho aoClicar={aoAbrirCarrinho} />}
 
     </div>
 
