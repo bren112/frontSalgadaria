@@ -43,6 +43,7 @@ function Aplicacao() {
   const [ultimoItemAdicionadoId, definirUltimoItemAdicionadoId] = usarEstado(null)
   const [usuarioLogado, definirUsuarioLogado] = usarEstado(() => lerUsuarioSalvo())
   const [atualizadorPedidos, definirAtualizadorPedidos] = usarEstado(0)
+  const [atualizadorProdutos, definirAtualizadorProdutos] = usarEstado(0)
   const [rotaAtual, definirRotaAtual] = usarEstado(() => lerRotaAtual())
   const usuarioEhAdmin = Boolean(usuarioLogado?.admin)
   const estaNaRotaAdmin = rotaAtual === rotaAdmin
@@ -169,6 +170,10 @@ function Aplicacao() {
     definirAtualizadorPedidos((valorAtual) => valorAtual + 1)
   }
 
+  function atualizarListaProdutos() {
+    definirAtualizadorProdutos((valorAtual) => valorAtual + 1)
+  }
+
   return (
     <main className="app">
       <Cabecalho
@@ -183,12 +188,14 @@ function Aplicacao() {
         <PaginaAdmin
           usuarioLogado={usuarioLogado}
           atualizadorPedidos={atualizadorPedidos}
+          aoAtualizarProdutos={atualizarListaProdutos}
         />
       ) : (
         <>
           <ListaSalgados
             aoAdicionar={adicionarAoCarrinho}
             ultimoItemAdicionadoId={ultimoItemAdicionadoId}
+            atualizadorProdutos={atualizadorProdutos}
           />
           {mostrarCarrinho && (
             <SecaoCarrinho

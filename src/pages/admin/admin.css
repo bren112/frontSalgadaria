@@ -180,6 +180,116 @@
   white-space: nowrap;
 }
 
+.painel-produtos-admin {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  gap: 20px;
+}
+
+.cabecalho-produtos-admin h2 {
+  margin: 0;
+  color: #24384d;
+  font-size: 1.25rem;
+}
+
+.grade-formulario-produto {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.campo-admin {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.campo-admin span {
+  color: #24384d;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.campo-admin input,
+.campo-admin select,
+.campo-admin textarea {
+  width: 100%;
+  border: 1px solid #edd7c9;
+  border-radius: 14px;
+  padding: 12px 14px;
+  background: #fffdfa;
+  color: #24384d;
+  font: inherit;
+}
+
+.campo-admin textarea {
+  resize: vertical;
+  min-height: 110px;
+}
+
+.campo-admin-largo {
+  grid-column: 1 / -1;
+}
+
+.acoes-formulario-admin {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  grid-column: 1 / -1;
+}
+
+.botao-admin {
+  min-height: 42px;
+  border: none;
+  border-radius: 999px;
+  padding: 0 18px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.botao-admin:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.botao-admin-primario {
+  background: #ef5a3c;
+  color: #ffffff;
+}
+
+.botao-admin-secundario {
+  background: #ffffff;
+  color: #24384d;
+  border: 1px solid #ead7ca;
+}
+
+.botao-admin-perigo {
+  background: #ffe5e0;
+  color: #b33f27;
+}
+
+.item-produto-admin {
+  align-items: flex-start;
+}
+
+.conteudo-produto-admin {
+  display: grid;
+  gap: 6px;
+}
+
+.conteudo-produto-admin small {
+  color: #5f6f7f;
+  line-height: 1.5;
+}
+
+.acoes-produto-admin {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 @media (max-width: 900px) {
   .topo-admin {
     flex-direction: column;
@@ -191,6 +301,10 @@
   }
 
   .grade-dashboard-admin {
+    grid-template-columns: 1fr;
+  }
+
+  .painel-produtos-admin {
     grid-template-columns: 1fr;
   }
 }
@@ -229,5 +343,19 @@
 
   .item-cliente-admin strong {
     white-space: normal;
+  }
+
+  .grade-formulario-produto {
+    grid-template-columns: 1fr;
+  }
+
+  .acoes-formulario-admin,
+  .acoes-produto-admin {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .botao-admin {
+    width: 100%;
   }
 }

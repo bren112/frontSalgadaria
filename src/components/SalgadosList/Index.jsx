@@ -39,7 +39,7 @@ async function buscarSalgados() {
   throw new Error('Nao foi possivel carregar os salgados.')
 }
 
-function ListaSalgados({ aoAdicionar, ultimoItemAdicionadoId }) {
+function ListaSalgados({ aoAdicionar, ultimoItemAdicionadoId, atualizadorProdutos }) {
   const [salgados, setSalgados] = useState([])
   const [categoriaAtiva, setCategoriaAtiva] = useState('Todos')
 
@@ -54,7 +54,7 @@ function ListaSalgados({ aoAdicionar, ultimoItemAdicionadoId }) {
     }
 
     carregar()
-  }, [])
+  }, [atualizadorProdutos])
 
   const categorias = [
     'Todos',
